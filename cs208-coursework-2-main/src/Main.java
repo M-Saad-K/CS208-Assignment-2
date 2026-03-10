@@ -1,5 +1,5 @@
 import algorithms.SchedulingAlgorithm;
-import algorithms.studentAlgorithms.YourAlgorithm;
+import algorithms.studentAlgorithms.SaadKhanAlgorithm;
 import utilities.AlgorithmEvaluator;
 
 import javax.swing.*;
@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) {
         AlgorithmEvaluator algorithmEvaluator = new AlgorithmEvaluator();
-        SchedulingAlgorithm algorithm = new YourAlgorithm();
+        SchedulingAlgorithm algorithm = new SaadKhanAlgorithm();
 
         if (algorithm.getName().equals("Please Enter Your Name Here")) {
             System.out.println("Invalid Name: Please enter your name into the YourAlgorithm file, " +
