@@ -1,5 +1,6 @@
 import algorithms.SchedulingAlgorithm;
 import algorithms.studentAlgorithms.LocalSearchAlgorithm;
+import algorithms.studentAlgorithms.MinMin2Algorithm;
 import algorithms.studentAlgorithms.MinMinAlgorithm;
 import algorithms.studentAlgorithms.SaadKhanAlgorithm;
 import utilities.AlgorithmEvaluator;
@@ -10,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) {
         AlgorithmEvaluator algorithmEvaluator = new AlgorithmEvaluator();
-        SchedulingAlgorithm algorithm = new LocalSearchAlgorithm();
+        SchedulingAlgorithm algorithm = new MinMin2Algorithm();
 
         if (algorithm.getName().equals("Please Enter Your Name Here")) {
             System.out.println("Invalid Name: Please enter your name into the YourAlgorithm file, " +
