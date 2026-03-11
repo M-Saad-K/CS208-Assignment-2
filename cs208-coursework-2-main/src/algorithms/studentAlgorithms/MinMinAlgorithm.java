@@ -10,17 +10,20 @@ public class MinMinAlgorithm extends SchedulingAlgorithm {
     // Create a variale for the min time
     int apporiateProcessor = 0;
     double curMinTmeJob = 0.0;
-    int jobsCompleted = 0;
+
 
     @Override
     public double[] runAlgorithm(double[][] etcMatrix) {
+        int jobsCompleted = 0;
         int numberOfProcessors = etcMatrix.length;
         int numberOfTasks = etcMatrix[0].length;
         double[] processorTimes = new double[numberOfProcessors];
+        int[] scheduledJob = new int[numberOfTasks];
+        int[] procAddon = new int[numberOfProcessors];
 
-        for(int i = 0; i < numberOfProcessors; i++){ // Iterate for each processor
+        while(jobsCompleted < numberOfTasks){ // Iterate for each processor
 
-            processorTimes[apporiateProcessor] = findMinJob(etcMatrix, numberOfProcessors, numberOfTasks, jobsCompleted); // Find the min time and process of job;
+            processorTimes[apporiateProcessor] = findMinJob(etcMatrix, numberOfProcessors, numberOfTasks, jobsCompleted, scheduledJob, procAddon); // Find the min time and process of job;
             apporiateProcessor = 0;
             jobsCompleted++;
         }
@@ -28,19 +31,19 @@ public class MinMinAlgorithm extends SchedulingAlgorithm {
     }
 
     // Method takes the start point as a parameter
-    public double findMinJob(double[][] etcMatrix, int noOfProcessors, int noOfJobs, int currIter){
+    public double findMinJob(double[][] etcMatrix, int noOfProcessors, int noOfJobs, int currIter, int[] scheduledJob, int[] procAddon){
         // CurrMinTimeJob will hold the smallest job currently
         // Array for if job is already done
-        int[] scheduledJob = new int[noOfJobs];
+
         // Add to time Addon
-        int[] procAddon = new int[noOfProcessors];
+
         double minJob = Double.MAX_VALUE;
         int minProc = 0;
 
         // Find the smallest job and its corresponding processor
-        for(int i = 0; i < 16; i++){ // Process
+        for(int i = 0; i < noOfProcessors; i++){ // Processes
             // Find the smallest overall job for each process and the smallest one
-            for (int j = 0; j < 16; j++){ // Job
+            for (int j = 0; j < noOfJobs; j++){ // Jobs
                 if(!containsJob(j, scheduledJob)){
                     if(minJob > etcMatrix[i][j]){
                         minJob = etcMatrix[i][j];
@@ -56,8 +59,6 @@ public class MinMinAlgorithm extends SchedulingAlgorithm {
         curMinTmeJob = minJob;
         apporiateProcessor = minProc;
         // Add the process's add on
-
-        curMinTmeJob = 0.0; // Don't forget to unintialise these
 
         return procAddon[apporiateProcessor] += curMinTmeJob;
 
