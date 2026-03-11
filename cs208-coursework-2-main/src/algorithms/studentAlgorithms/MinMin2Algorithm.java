@@ -9,52 +9,58 @@ public class MinMin2Algorithm extends SchedulingAlgorithm {
 
     @Override
     public double[] runAlgorithm(double[][] etcMatrix) {
-
         int numberOfProcessors = etcMatrix.length;
         int numberOfTasks = etcMatrix[0].length;
         double[] processorTimes = new double[numberOfProcessors];
+        // Array of all the elements that are done
+        int[] scheduled = new int[numberOfTasks];
+            // Do this method for all jobs, so to assign the minimum of all the jobs to the apporiate processors
+            for(int i = 0; i < numberOfTasks; i++){
+                // This method will find the minimum of all the job and their processes
+                // Must set a process to assign & we need to assign the min time chosen at the selected job
+                // We may need to return the min time from
+                // DEBUG!
 
-        // Do this method for all jobs, so to assign the minimum of all the jobs to the apporiate processors
-        for(int i = 0; i < numberOfTasks; i++){
-            // This method will find the minimum of all the job and their processes
-            // Must set a process to assign & we need to assign the min time chosen at the selected job
-            // We may need to return the min time from
-            processorTimes[chosenProcessor] += findMinJob(etcMatrix, numberOfTasks-i, numberOfProcessors); //We do noofTask -1 to find reduce the array size
-        }
+                processorTimes[chosenProcessor] += findGlobalMinJob(etcMatrix, numberOfTasks, numberOfProcessors, scheduled, processorTimes); //We do noofTask -1 to find reduce the array size
+                System.out.println("Chosen job is: Job" + chosenJob);
+                System.out.println("Chosen processor is : " + chosenProcessor);
+            }
 
         return processorTimes;
     }
 
-    double findMinJob(double[][] etcMatrix, int numberOfTasks, int numberOfProcessors){
+    double findGlobalMinJob(double[][] etcMatrix, int numberOfTasks, int numberOfProcessors, int[] scheduled, double[] processorTimes){
         // Most minimumJob
         int minJobInd = 0;
-
-        // Array of all the elements that are done
-        int[] scheduled = new int[numberOfTasks];
 
         // Array of all the processors doing each task properly
         int[] bestProcessors = new int[numberOfTasks];
 
         // Array of all the minimum times for each job
         double[] minJobs = new double[numberOfTasks];
-        double currMin = Double.MAX_VALUE; // Store the min etc value
 
         // Find min execution time p/ job
         for(int i = 0; i < numberOfTasks; i++){
+            // The issue is it is thinging in only Job0, not any other job
+            // How to fix -> include matrix of number of process
             // Check if scheduled
+            double currMin = Double.MAX_VALUE; // Store the min etc value
+
             if(scheduled[i] != 1){
                 // Find best process for job
                 for(int j = 0; j < numberOfProcessors; j++){
                     // Check for min
-                    if(etcMatrix[j][i] < currMin){
-                        currMin = etcMatrix[j][i]; // Store etc
+                    double completionTime = processorTimes[j] + etcMatrix[j][i]; // Completion time is the combined processTime and isolated duration of job
+
+                    if(completionTime < currMin){ // We're actually comparing the currentMinimum time to the completion time
+                        currMin = completionTime; // Store completion time
                         bestProcessors[i] = j; // Best processor j for job i
                     }
                 }
                 // Put the currMin job for i inside i slot of minJobs
                 minJobs[i] = currMin; // I is our index
-                // Set the job
-                scheduled[i] = 1;
+            } else {
+                ; //Do nothing
             }
         }
 
@@ -62,19 +68,27 @@ public class MinMin2Algorithm extends SchedulingAlgorithm {
         /** Be cautious, I might make a mistake, so do this carefully
          * - Note to self
          * **/
+        // A very important point, minJobs contains all the min values of avaiable jobs and 0 at the positions of scheduled jobs
         double minTemp = Double.MAX_VALUE; // This is temp for storing min value
         for(int i = 0; i < numberOfTasks; i++){
-            if(minTemp < minJobs[i]){ // If last min is more than current
-                minTemp = minJobs[i]; // Put current in temp
-                minJobInd = i; // Store the current min index
+            if(scheduled[i] != 1){
+                if(minTemp > minJobs[i]){ // If last min is more than current
+                    minTemp = minJobs[i]; // Put current in temp
+                    minJobInd = i; // Store the current min index
+                }
+            } else {
+                ; // Do nothing
             }
-        } // After this loop is done, we would've gotten the min. job's index in variable
+        }
 
         // Now assign to finals
         chosenJob = minJobInd;
         chosenProcessor = bestProcessors[minJobInd]; // find the best job for the min job's index
+        // Set the job
+        scheduled[minJobInd] = 1;
 
-        return minJobs[chosenJob];
+        System.out.println("The current minimum time is: " + minJobs[chosenJob]);
+        return etcMatrix[chosenProcessor][chosenJob];
     }
 
     @Override
