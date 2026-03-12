@@ -19,11 +19,8 @@ public class MinMin2Algorithm extends SchedulingAlgorithm {
                 // This method will find the minimum of all the job and their processes
                 // Must set a process to assign & we need to assign the min time chosen at the selected job
                 // We may need to return the min time from
-                // DEBUG!
 
                 processorTimes[chosenProcessor] += findGlobalMinJob(etcMatrix, numberOfTasks, numberOfProcessors, scheduled, processorTimes); //We do noofTask -1 to find reduce the array size
-                System.out.println("Chosen job is: Job" + chosenJob);
-                System.out.println("Chosen processor is : " + chosenProcessor);
             }
 
         return processorTimes;
@@ -41,7 +38,6 @@ public class MinMin2Algorithm extends SchedulingAlgorithm {
 
         // Find min execution time p/ job
         for(int i = 0; i < numberOfTasks; i++){
-            // The issue is it is thinging in only Job0, not any other job
             // How to fix -> include matrix of number of process
             // Check if scheduled
             double currMin = Double.MAX_VALUE; // Store the min etc value

@@ -25,18 +25,9 @@ public class LocalSearch2Algorithm extends SchedulingAlgorithm {
             // Current job
             int bestLocalProcess = getBestLocalProcess(etcMatrix, i, numberOfProcessors, processorTimes);
             // Now we've found the local minJob execution time of Job i
-            chosenProcOfJobIn[i] = bestLocalProcess;
+            processorTimes[bestLocalProcess] += etcMatrix[bestLocalProcess][i];
 
         }
-        if(int i = 0; i < numberOfTasks; i++){
-
-            int currMin =
-            if(!scheduled[currMin]){
-                processorTimes[bestLocalProcess] += etcMatrix[bestLocalProcess][i];
-            }
-        }
-
-        processorTimes[bestLocalProcess] += etcMatrix[bestLocalProcess][i];
         // After loop ends, we've now gotten all the local mintime jobs's indexes in an array
         // Now we need to add each processes to the current processorTimes
 
