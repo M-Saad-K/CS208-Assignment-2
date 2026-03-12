@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) {
         AlgorithmEvaluator algorithmEvaluator = new AlgorithmEvaluator();
-        SchedulingAlgorithm algorithm = new LocalSearch2Algorithm();
+        SchedulingAlgorithm algorithm = new SaadKhan2Algorithm();
 
         if (algorithm.getName().equals("Please Enter Your Name Here")) {
             System.out.println("Invalid Name: Please enter your name into the YourAlgorithm file, " +

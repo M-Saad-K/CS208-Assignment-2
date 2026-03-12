@@ -58,89 +58,85 @@ public class SaadKhanAlgorithm extends SchedulingAlgorithm {
             int numberOfProcessors = etcMatrix.length;
             int numberOfTasks = etcMatrix[0].length;
             double[] processorTimes = new double[numberOfProcessors];
-            // Scheduled list
-            int[] scheduled = new int[numberOfTasks]; // This is scheduled list for checking if something is scheduled or not
-            // Chosen processor
-            int globalMinProcessor = 0;
-
-            // Next now iterate through each task
-            for(int i = 0; i < numberOfTasks; i++){
-                // Intialise these every time
-                // Current job
-
-                // find all the local min processes!
-                int[] bestLocalProcesses = getBestLocalProcess(etcMatrix, i, numberOfProcessors, numberOfTasks, processorTimes);
-                // find the global of all the jobs!
-                double globalAv_MinDuration = findGlobalMinJob(bestLocalProcesses, scheduled, etcMatrix, numberOfProcessors, globalMinProcessor);
-
-                // Now we've found the local minJob execution time of Job i
-                processorTimes[globalMinProcessor] += globalAv_MinDuration;
-
-            }
-            // After loop ends, we've now gotten all the local mintime jobs's indexes in an array
-            // Now we need to add each processes to the current processorTimes
-
-            return processorTimes;
-        }
-
-        int[] getBestLocalProcess(double[][] etcMatrix, int i, int numberOfProcessors, int numberOfTasks, double[] processorTimes) {
-            // Get random starting positon
-            int startPos = rand.nextInt(numberOfProcessors);
-            System.out.println("startPos: " + startPos);
-            System.out.println(startPos);
-
-            double minJobDur = processorTimes[startPos] + etcMatrix[startPos][i]; // Get the chosen processor for the current task i
 
             /// Important, this will store which processor was chosen for job i
             int[] bestLocalProcesses = new int[numberOfTasks];
 
-            // Iterating through the processor list for only two steps out
-            for(int j = 1; j < 5; j++){
+            // Scheduled list
+            int[] scheduled = new int[numberOfTasks]; // This is scheduled list for checking if something is scheduled or not
+            // Chosen processor
+            int globalMinProcessor = 0;
+                // Intialise these every time
+                // Current job
 
-                // Intialise best local process for job
-                bestLocalProcesses[j] = startPos;
+                // find all the local min processes!
+            getBestLocalProcess(etcMatrix, numberOfProcessors, numberOfTasks, processorTimes, bestLocalProcesses);
+                // find the global of all the jobs
 
-                int forward = (startPos+j)% numberOfProcessors;
-                int backward = Math.floorMod(startPos - j, numberOfProcessors); // Java can't handle -1 using %,
+            for(int i = 0; i < numberOfTasks; i++){ // Iterate through each task until they are all scheduled
+                double globalAv_MinDuration = findGlobalMinJob(bestLocalProcesses, scheduled, etcMatrix, numberOfTasks, globalMinProcessor);
 
-                // Calculating the forward & backward completion times
-                double forMinJobDur = processorTimes[forward] + etcMatrix[forward][i];
-                double backMinJobDur = processorTimes[backward] + etcMatrix[backward][i];
-
-                // I learned this the hard way
-                System.out.println("Front position: " + forward);
-                System.out.println("Back position: " + backward);
-
-                if(minJobDur > forMinJobDur){
-                    // If the forward neighbour is min
-                    minJobDur = forMinJobDur;
-                    bestLocalProcesses[j] = forward; // Get the best process
-                }
-
-                if (minJobDur > backMinJobDur) {
-                    // If the backward neighbour is min
-                    minJobDur = backMinJobDur;
-                    bestLocalProcesses[j] = backward; // Get the best process
-                }
+                // Now we've found the local minJob execution time of Job i
+                processorTimes[globalMinProcessor] += globalAv_MinDuration;
+                // After loop ends, we've now gotten all the local mintime jobs's indexes in an array
+                // Now we need to add each processes to the current processorTimes
             }
 
-            // From this you get an array of all the best local processes at their respective job slots
-            return bestLocalProcesses;
+            return processorTimes;
         }
 
-        double findGlobalMinJob(int[] bestLocalProcesses, int[] scheduled, double[][] etcMatrix, int numberofProcesses, int globalMinProcessor){
+        void getBestLocalProcess(double[][] etcMatrix, int numberOfProcessors, int numberOfTasks, double[] processorTimes, int[] bestLocalProcesses) {
+
+            for(int i = 0; i < numberOfTasks; i++){
+                // Get random starting positon
+                int startPos = rand.nextInt(numberOfProcessors);
+
+                double minJobDur = processorTimes[startPos] + etcMatrix[startPos][i]; // Get the chosen processor for the current task i
+
+                // Iterating through the processor list for only two steps out
+                for(int j = 1; j < 5; j++){
+
+                    // Intialise best local process for job
+                    bestLocalProcesses[i] = startPos;
+
+                    int forward = (startPos+j)% numberOfProcessors;
+                    int backward = Math.floorMod(startPos - j, numberOfProcessors); // Java can't handle -1 using %,
+
+                    // Calculating the forward & backward completion times
+                    double forMinJobDur = processorTimes[forward] + etcMatrix[forward][i];
+                    double backMinJobDur = processorTimes[backward] + etcMatrix[backward][i];
+                    // I learned this the hard way
+
+                    if(minJobDur > forMinJobDur){
+                        // If the forward neighbour is min
+                        minJobDur = forMinJobDur;
+                        bestLocalProcesses[i] = forward; // Get the best process
+                    }
+
+                    if (minJobDur > backMinJobDur) {
+                        // If the backward neighbour is min
+                        minJobDur = backMinJobDur;
+                        bestLocalProcesses[i] = backward; // Get the best process
+                    }
+                }
+
+            }
+            /// From this you get an array of all the best local processes at their respective job slots
+        }
+
+        double findGlobalMinJob(int[] bestLocalProcesses, int[] scheduled, double[][] etcMatrix, int numberofTasks, int globalMinProcessor){
             // Find the most minimum job from the array
             Double minJob = Double.MAX_VALUE; // Re-intialise this every time the method is called
             int globalMinJob = 0;
-            for(int i = 0; i < numberofProcesses; i++){
+            for(int i = 0; i < numberofTasks; i++){
 
                 // First check if not scheduled job
                 if(scheduled[i] != 1 && minJob > etcMatrix[bestLocalProcesses[i]][i]){ // If the current job is not scheduled
                     // What the if statement checks that in the current best local processor for job i's job completion time
                     // is less than the minJob
                     minJob = etcMatrix[bestLocalProcesses[i]][i];
-                    globalMinProcessor = bestLocalProcesses[i];
-                    globalMinJob = i;
+                    globalMinProcessor = bestLocalProcesses[i]; // Store minimum global processor number
+                    globalMinJob = i; // Store what job it is happening on
                 }
             }
             scheduled[globalMinJob] = 1; // Set the current global job to be scheduled
