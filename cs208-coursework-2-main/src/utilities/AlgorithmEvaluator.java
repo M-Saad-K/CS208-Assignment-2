@@ -42,8 +42,8 @@ public class AlgorithmEvaluator {
             System.out.println("Algorithm time exceeded!");
             result.cancel(true);
             grade = 0.0;
-        } catch (Exception e) {
-            System.out.println("Error running algorithm. " + e.getMessage());
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         executorService.shutdown();
         printGradeEvaluation(grade, algorithm);
