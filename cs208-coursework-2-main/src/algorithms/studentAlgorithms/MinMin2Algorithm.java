@@ -83,7 +83,7 @@ public class MinMin2Algorithm extends SchedulingAlgorithm {
         // Set the job
         scheduled[minJobInd] = 1;
 
-        System.out.println("The current minimum time is: " + minJobs[chosenJob]);
+        //System.out.println("The current minimum time is: " + minJobs[chosenJob]);
         return etcMatrix[chosenProcessor][chosenJob];
     }
 
