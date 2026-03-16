@@ -24,7 +24,7 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
         bestLocalProcesses = new int[numberOfTasks];
         processorTimes = new double[numberOfProcessors];
 
-        for(int t = 0; t < numberOfTasks; t++){ // Iterate through the number of jobs
+        for (int t = 0; t < numberOfTasks; t++) { // Iterate through the number of jobs
 
             ///  Weird behavior from here!
             // This will develop the bestLocalProcesses array
@@ -42,10 +42,15 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
         return processorTimes;
     }
 
+    @Override
+    public String getName() {
+        return "";
+    }
+
     void getBestLocalProcess(double[][] etcMatrix, int numberOfProcessors, int numberOfTasks, double[] processorTimes, int[] bestLocalProcesses) {
 
         // This will iterate through each task to develop the array of processors
-        for(int i = 0; i < numberOfTasks; i++){
+        for (int i = 0; i < numberOfTasks; i++) {
 
             int startPos = rand.nextInt(numberOfProcessors); // Get rand. starting position
 
@@ -53,12 +58,12 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
 
             bestLocalProcesses[i] = startPos;
 
-            for(int j = 1; j < 5; j++){ // Iterate for 2 neighbours
+            for (int j = 1; j < 5; j++) { // Iterate for 2 neighbours
 
                 /*
-                *               B <- B <- starting position - > F -> F
-                *               1    2        3                 4    5
-                * */
+                 *               B <- B <- starting position - > F -> F
+                 *               1    2        3                 4    5
+                 * */
 
                 int forward = (startPos + j) % numberOfProcessors; // Forward neighbour
                 int backward = Math.floorMod(startPos - j, numberOfProcessors); // Back neighbour
@@ -66,12 +71,12 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
                 double forMinJobDur = processorTimes[forward] + etcMatrix[forward][i];
                 double backMinJobDur = processorTimes[backward] + etcMatrix[backward][i];
 
-                if(minJobDur > forMinJobDur){
+                if (minJobDur > forMinJobDur) {
                     minJobDur = forMinJobDur;
                     bestLocalProcesses[i] = forward;
                 }
 
-                if(minJobDur > backMinJobDur){
+                if (minJobDur > backMinJobDur) {
                     minJobDur = backMinJobDur;
                     bestLocalProcesses[i] = backward;
                 }
@@ -79,32 +84,53 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
         } // By the end of the for loop - we would've gotten a nice array of best local processors for each job
     }
 
-    int[] findGlobalMinJob(int[] bestLocalProcesses, int[] scheduled, double[][] etcMatrix, int numberofTasks, double[] processorTimes){
+    int[] findGlobalMinJob(int[] bestLocalProcesses, int[] scheduled, double[][] etcMatrix, int numberofTasks, double[] processorTimes) {
 
-        double minJob = Double.MAX_VALUE;
-        int globalMinProcessor = 0; // This will hold the minimum global processor
-        int globalMinJob = 0; // This will hold the minimum global job number
+        /*double minJobDur = Double.MAX_VALUE;
+        int globalLocalMinProcessor = 0;
+        int globalLocalMinJob = 0;
 
-        for(int i = 0; i < numberofTasks; i++){
+        for (int i = 0; i < numberofTasks / 2; i++) {// Iterate for 2 neighbours
+            int startPos = rand.nextInt(numberofTasks);
 
-            if(scheduled[i] != 1){ // If not scheduled job
+            int forward = (startPos + i) % numberofTasks; // Forward neighbour
+            int backward = Math.floorMod(startPos - i, numberofTasks); // Back neighbour
 
-                int p = bestLocalProcesses[i];
-                double completionTime = processorTimes[p] + etcMatrix[p][i]; // Minimum completion time
+            double forMinJobDur = processorTimes[forward] + etcMatrix[forward][i];
+            double backMinJobDur = processorTimes[backward] + etcMatrix[backward][i];
 
-                if(minJob > completionTime){ // Compare this with the minJob
-                    minJob = completionTime;
-                    globalMinProcessor = p; // Set the min process to the minimum one currently found
-                    globalMinJob = i; // Set the min job to the minimum current found
+            if (minJobDur > forMinJobDur) {
+                minJobDur = forMinJobDur;
+                bestLocalProcesses[i] = forward;
+            }
+
+            if (minJobDur > backMinJobDur) {
+                minJobDur = backMinJobDur;
+                bestLocalProcesses[i] = backward;
+            }
+        } */
+
+        double minJobDur = Double.MAX_VALUE;
+        int globalLocalMinProcessor = 0; // This will hold the minimum global processor
+        int globalLocalMinJob = 0; // This will hold the minimum global job number
+
+        for (int i = 0; i < numberofTasks; i++) { // Iterate through the number of tasks
+
+            if (scheduled[i] != 1) { // Check if the task isn't scheduled already
+
+                int p = bestLocalProcesses[i]; // Get the best local process for that task
+
+                double completionTime = processorTimes[p] + etcMatrix[p][i]; // Get completion time of ETC
+
+                if (completionTime < minJobDur) { // min completion time globally
+                    minJobDur = completionTime;
+                    globalLocalMinProcessor = p;
+                    globalLocalMinJob = i;
                 }
             }
         }
 
-        return new int[]{globalMinProcessor, globalMinJob}; // Found this neat trick of returning two statements as an array
+        return new int[]{globalLocalMinProcessor, globalLocalMinJob};// Found this neat trick of returning two statements as an array
     }
 
-    @Override
-    public String getName() {
-        return studentName;
-    }
 }
