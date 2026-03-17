@@ -7,11 +7,11 @@ import java.util.Random;
 /**
  * Brief Summary of Algorithm
  *
- * - It uses a min min algorithm, find the Minimum Global Completion Times for Processes and Jobs for them
+ * - It uses a min min algorithm, find the Minimum Global Completion Times for Processes and Jobs
  * - It then uses local search to find the heaviest and lightest processors, and try to move each job from the
  *  heaviest to the lightest processor while monitoring if the makespan improves or not
- *  - If makespan doesn't improve for job transfer, that job is skipped from the transfer steps and other jobs are checked
- * - This operation equalises the load on all the processor, making a very optimised system!
+ *  - If makespan doesn't improve for a particular job transfer, that job is skipped from the transfer steps and other jobs are checked
+ * - This operation equalises the load on all the processors, making a very optimised system and reduces the makespan!
  *
  * **/
 
@@ -123,22 +123,22 @@ public class SaadKhanAlgorithm extends SchedulingAlgorithm {
         for (double processorTime : processorTimes) {
             prevMakeSpan = Math.max(prevMakeSpan, processorTime);
         }
-        // This loop will loop through each element of the processTimes array
+        // This will loop through each element of the processTimes array
         for(int i = 0; i < numberofProcessors; i++){
 
             // From this we will do a local search through a random point in array
             // To search for most occupied processor
             int startPos = rand.nextInt(numberofProcessors);
 
-            // This is for finding the heavy local proc
+            // This is for finding the heaviest and lightest processor duration
             double heavyLocalProcDuration = 0.0;
             double lightestLocalProcDuration = Double.MAX_VALUE;
-            // This is for finding the lightest local proc
+            // This is for finding the heaviest and lightest processor
             int heavyProcessorIndex = 0;
             int lightestProcessorIndex = 0;
 
 
-            // This for loop finds the most loadful processor
+            // This loop finds the most loadful processor
             for(int j = 1; j < 7; j++){ // Check 3 forward 3 back
                 int forward = (startPos + j) % numberofProcessors; // Forward neighbour
                 int backward = Math.floorMod(startPos - j, numberofProcessors); // Back neighbour

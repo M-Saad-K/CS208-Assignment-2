@@ -14,10 +14,6 @@ public class LocalSearchAlgorithm extends SchedulingAlgorithm {
         int numberOfProcessors = etcMatrix.length;
         int numberOfTasks = etcMatrix[0].length;
         double[] processorTimes = new double[numberOfProcessors];
-        // Array that will store all the chosen processes, with index of chosen job
-        int[] chosenProcOfJobIn = new int[numberOfTasks];
-        // Scheduled list
-        int[] scheduled = new int[numberOfTasks];
 
         // Next now iterate through each task
         for(int i = 0; i < numberOfTasks; i++){
@@ -37,9 +33,6 @@ public class LocalSearchAlgorithm extends SchedulingAlgorithm {
     int getBestLocalProcess(double[][] etcMatrix, int i, int numberOfProcessors, double[] processorTimes) {
         // Get random starting positon
         int startPos = rand.nextInt(numberOfProcessors);
-        System.out.println("startPos: " + startPos);
-        System.out.println(startPos);
-
         double minJobDur = processorTimes[startPos] + etcMatrix[startPos][i]; // Get the chosen processor for the current task i
 
         /// Important, this will store which processor was chosen for job i
@@ -49,14 +42,11 @@ public class LocalSearchAlgorithm extends SchedulingAlgorithm {
         for(int j = 1; j < 5; j++){
             int forward = (startPos+j)% numberOfProcessors;
             int backward = Math.floorMod(startPos - j, numberOfProcessors); // Java can't handle -1 using %,
+            // I learned this the hard way
 
             // Calculating the forward & backward completion times
             double forMinJobDur = processorTimes[forward] + etcMatrix[forward][i];
             double backMinJobDur = processorTimes[backward] + etcMatrix[backward][i];
-
-            // I learned this the hard way
-            System.out.println("Front position: " + forward);
-            System.out.println("Back position: " + backward);
 
             if(minJobDur > forMinJobDur){
                 // If the forward neighbour is min
