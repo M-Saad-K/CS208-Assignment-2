@@ -127,14 +127,17 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
 
             // This is for finding the heavy local proc
             double heavyLocalProcDuration = 0.0;
+            double lightestLocalProcDuration = Double.MAX_VALUE;
             int heavyProcessorIndex = 0;
+            int lightestProcessorIndex = 0;
+
 
             // This for loop finds the most loadful processor
-            for(int j = 1; j < 12; j++){ // Check 2 forward 2 back
+            for(int j = 1; j < 7; j++){ // Check 2 forward 2 back
                 int forward = (startPos + j) % numberofProcessors; // Forward neighbour
                 int backward = Math.floorMod(startPos - j, numberofProcessors); // Back neighbour
 
-                // Next we'll find the job with the heaviest load
+                /// Next we'll find the job with the heaviest load
                 if(processorTimes[forward] > heavyLocalProcDuration){ // If forward more
                     heavyLocalProcDuration = processorTimes[forward];
                     heavyProcessorIndex = forward; // Get the processor that is the most heaviest!
@@ -145,28 +148,44 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
                     heavyProcessorIndex = backward; // Get the processor that is the most heaviest!
                 }
 
+                /// Next we'll find the job with the lightest load
+                if(processorTimes[forward] < lightestLocalProcDuration){ // If forward more
+                    lightestLocalProcDuration = processorTimes[forward];
+                    lightestProcessorIndex = forward; // Get the processor that is the most lightest!
+                }
+
+                if(processorTimes[backward] < lightestLocalProcDuration){ // If backward more
+                    lightestLocalProcDuration = processorTimes[backward];
+                    lightestProcessorIndex = backward; // Get the processor that is the most lightest!
+                }
+
             }
 
             // This then experiements!
 
-            // Now we need to subtract the job with the most load from chosen processor
+            // Now we need to try and subtract each job from the processor with the most load
             // Store in some temp
-            // Add that to the current processor
+            // Add that to the lightest processor
+            // See if has improved the makespan
 
-            // Use this func to find the heaviest job
-            double heaviestJob = findHeaviestJobOnProcessor(heavyProcessorIndex, etcMatrix, numberofTasks, removed);
+            for(int k = 0; k < etcMatrix[heavyProcessorIndex].length; k++){ // Iterate thru each task in heavyProcessorIndex
+                // Continue only if it is going well and having some improvement!
+                processorTimes[heavyProcessorIndex] -= etcMatrix[heavyProcessorIndex][k]; // Remove job from the processor times of the heaviest process
+                processorTimes[lightestProcessorIndex] += etcMatrix[lightestProcessorIndex][k]; // Add job to the lightest processor
+                // Check if makespan has improved!
+                double newMakeSpan = analyseTempMakeSpan(processorTimes);
+                if(newMakeSpan < prevMakeSpan){ // If newMakespan if faster than the previous make span
+                    // Make the newMakeSpan, the previous makespan
+                    prevMakeSpan = newMakeSpan;
 
-            processorTimes[heavyProcessorIndex] -= heaviestJob; // Remove loadful job
-            processorTimes[i] += heaviestJob; // Add heaviest job to the current processor
+                } else { // There has been no improvement
+                    // Reject the changes
+                    processorTimes[heavyProcessorIndex] += etcMatrix[heavyProcessorIndex][k]; // Add job back from the processor times of the heaviest process
+                    processorTimes[lightestProcessorIndex] -= etcMatrix[lightestProcessorIndex][k]; // remove job to the lightest processor
 
-            // Run new makespan calculator
-            double newMakeSpan = analyseTempMakeSpan(processorTimes);
-            if(newMakeSpan < prevMakeSpan){ // If this newMakeSpan is better!
-                prevMakeSpan = newMakeSpan;
-            } else {
-                // Reject the changes we just did!
-                processorTimes[heavyProcessorIndex] += heaviestJob; // Add back loadful job
-                processorTimes[i] -= heaviestJob; // Remove heaviest job to the current processor
+                    // There is now no need in continuing the selection
+                    break; // Now we should move to the next randomised choice
+                }
             }
 
         }
@@ -182,6 +201,8 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
         }
         return newMakeSpan;
     }
+
+    /*
 
     // This function find the heaviest job and returns the job duration
     double findHeaviestJobOnProcessor(int chosenProcessor, double[][] etcMatrix, int numberofTasks, int[] removed){
@@ -209,6 +230,6 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
         removed[heaviestJobIn] = 1;
 
         return max;
-    }
+    } */
 
 }
