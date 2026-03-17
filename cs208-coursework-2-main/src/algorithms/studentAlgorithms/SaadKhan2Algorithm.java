@@ -183,8 +183,6 @@ public class SaadKhan2Algorithm extends SchedulingAlgorithm {
                     processorTimes[heavyProcessorIndex] += etcMatrix[heavyProcessorIndex][k]; // Add job back from the processor times of the heaviest process
                     processorTimes[lightestProcessorIndex] -= etcMatrix[lightestProcessorIndex][k]; // remove job to the lightest processor
 
-                    // There is now no need in continuing the selection
-                    break; // Now we should move to the next randomised choice
                 }
             }
 
