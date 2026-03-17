@@ -2,7 +2,7 @@ package algorithms.studentAlgorithms;
 
 import algorithms.SchedulingAlgorithm;
 
-public class MinMin2Algorithm extends SchedulingAlgorithm {
+public class MinMinAlgorithm extends SchedulingAlgorithm {
 
     int chosenProcessor = 0; // This will store the processor index
     int chosenJob = 0; // This is will store the job's index, e.g 0, 1, 2, 4

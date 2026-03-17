@@ -5,147 +5,205 @@ import algorithms.SchedulingAlgorithm;
 import java.util.Random;
 
 /**
- * Min - Min:
- * - Find the minimum completion time of all the jobs
- * - Chooses the most global minimum job and processor for it
- * - Schedules that first and then goes to the next minimum job
+ * Brief Summary of Algorithm
  *
- * Pros:
- * - Very effective in finding minimum job duration
+ * - It uses a min min algorithm, find the Minimum Global Completion Times for Processes and Jobs for them
+ * - It then uses local search to find the heaviest and lightest processors, and try to move each job from the
+ *  heaviest to the lightest processor while monitoring if the makespan improves or not
+ *  - If makespan doesn't improve for job transfer, that job is skipped from the transfer steps and other jobs are checked
+ * - This operation equalises the load on all the processor, making a very optimised system!
  *
- * Cons:
- * - Takes quite a lot of computation power
- *
- * Local Search:
- * - In each job do a local search from a randomised point, from neighbours
- *
- * Pros:
- * - Very fast and memory efficient
- *
- * Cons:
- * - It all dependes on where the randomised order happens, doesn't always get the best result
- * - Doesn't check the global minimum
- *
- * Saad Khan's Algorithm:
- *  - For each job, use randomised point and search neighbours for min
- *  - Store each job's min in an array
- *  - Find the minimum completion time from the array and execute that first, then execute the next minimum
- *
- *  Pro:
- *  - Fast and efficient search for minimum of job and minimum globally
- *  - Ensure's global shortest completion time first
- *
- *  Cons:
- *  - Won't be as accurate or stable since the randomised point neighbour search may not find the best
  * **/
+
 public class SaadKhanAlgorithm extends SchedulingAlgorithm {
 
-    // Please put your name in here.
     private String studentName = "Muhammad Saad Khan";
 
-    /**
-     * Fill in this method for your submission. You have a maximum of 4.5 minutes of processing time.
-     * If your submission exceeds this time, then your grade will be penalised.
-     *
-     * @param etcMatrix The Estimate To Compute Matrix (ETC Matrix) of the chosen file.
-     * @return The total amount of time required for each processor
-     */
-        // Set up a random point to access in the file
-        Random rand = new Random();
+    Random rand = new Random();
 
-        @Override
-        public double[] runAlgorithm(double[][] etcMatrix) {
-            int numberOfProcessors = etcMatrix.length;
-            int numberOfTasks = etcMatrix[0].length;
-            double[] processorTimes = new double[numberOfProcessors];
+    @Override
+    public double[] runAlgorithm(double[][] etcMatrix) {
+        int numberOfProcessors = etcMatrix.length; // Number of processors
+        int numberOfTasks = etcMatrix[0].length; // Number of tasks
+        double[] processorTimes = new double[numberOfProcessors]; // This is the duration of the processor
 
-            /// Important, this will store which processor was chosen for job i
-            int[] bestLocalProcesses = new int[numberOfTasks];
 
-            // Scheduled list
-            int[] scheduled = new int[numberOfTasks]; // This is scheduled list for checking if something is scheduled or not
-            // Chosen processor
-            int globalMinProcessor = 0;
-                // Intialise these every time
-                // Current job
+        int[] scheduled = new int[numberOfTasks]; // This will hold scheduled jobs, at their index number
 
-                // find all the local min processes!
-            getBestLocalProcess(etcMatrix, numberOfProcessors, numberOfTasks, processorTimes, bestLocalProcesses);
-                // find the global of all the jobs
+        scheduled = new int[numberOfTasks];
+        processorTimes = new double[numberOfProcessors];
 
-            for(int i = 0; i < numberOfTasks; i++){ // Iterate through each task until they are all scheduled
-                double globalAv_MinDuration = findGlobalMinJob(bestLocalProcesses, scheduled, etcMatrix, numberOfTasks, globalMinProcessor);
+        for (int t = 0; t < numberOfTasks; t++) { // Iterate through the number of jobs
 
-                // Now we've found the local minJob execution time of Job i
-                processorTimes[globalMinProcessor] += globalAv_MinDuration;
-                // After loop ends, we've now gotten all the local mintime jobs's indexes in an array
-                // Now we need to add each processes to the current processorTimes
-            }
+            int[] result = findGlobalMinJob(scheduled, etcMatrix, numberOfTasks, processorTimes, numberOfProcessors);
 
-            return processorTimes;
+            int globalMinProcessor = result[0];
+            int globalMinJob = result[1];
+
+            processorTimes[globalMinProcessor] += etcMatrix[globalMinProcessor][globalMinJob]; // Add onto global processTimes
+            scheduled[globalMinJob] = 1; // Show the job as scheduled!
         }
 
-        void getBestLocalProcess(double[][] etcMatrix, int numberOfProcessors, int numberOfTasks, double[] processorTimes, int[] bestLocalProcesses) {
-
-            for(int i = 0; i < numberOfTasks; i++){
-                // Get random starting positon
-                int startPos = rand.nextInt(numberOfProcessors);
-
-                double minJobDur = processorTimes[startPos] + etcMatrix[startPos][i]; // Get the chosen processor for the current task i
-
-                // Iterating through the processor list for only two steps out
-                for(int j = 1; j < 5; j++){
-
-                    // Intialise best local process for job
-                    bestLocalProcesses[i] = startPos;
-
-                    int forward = (startPos+j)% numberOfProcessors;
-                    int backward = Math.floorMod(startPos - j, numberOfProcessors); // Java can't handle -1 using %,
-
-                    // Calculating the forward & backward completion times
-                    double forMinJobDur = processorTimes[forward] + etcMatrix[forward][i];
-                    double backMinJobDur = processorTimes[backward] + etcMatrix[backward][i];
-                    // I learned this the hard way
-
-                    if(minJobDur > forMinJobDur){
-                        // If the forward neighbour is min
-                        minJobDur = forMinJobDur;
-                        bestLocalProcesses[i] = forward; // Get the best process
-                    }
-
-                    if (minJobDur > backMinJobDur) {
-                        // If the backward neighbour is min
-                        minJobDur = backMinJobDur;
-                        bestLocalProcesses[i] = backward; // Get the best process
-                    }
-                }
-
-            }
-            /// From this you get an array of all the best local processes at their respective job slots
-        }
-
-        double findGlobalMinJob(int[] bestLocalProcesses, int[] scheduled, double[][] etcMatrix, int numberofTasks, int globalMinProcessor){
-            // Find the most minimum job from the array
-            Double minJob = Double.MAX_VALUE; // Re-intialise this every time the method is called
-            int globalMinJob = 0;
-            for(int i = 0; i < numberofTasks; i++){
-
-                // First check if not scheduled job
-                if(scheduled[i] != 1 && minJob > etcMatrix[bestLocalProcesses[i]][i]){ // If the current job is not scheduled
-                    // What the if statement checks that in the current best local processor for job i's job completion time
-                    // is less than the minJob
-                    minJob = etcMatrix[bestLocalProcesses[i]][i];
-                    globalMinProcessor = bestLocalProcesses[i]; // Store minimum global processor number
-                    globalMinJob = i; // Store what job it is happening on
-                }
-            }
-            scheduled[globalMinJob] = 1; // Set the current global job to be scheduled
-            return etcMatrix[globalMinProcessor][globalMinJob]; // return the global minimum job
-
-        }
+        // This method equalises the work load of the processors, and then returns the now optimised processorTimes
+        return equalisingProcessors(etcMatrix, processorTimes, numberOfProcessors);
+    }
 
     @Override
     public String getName() {
-        return studentName;
+        return "";
     }
+
+    int[] findGlobalMinJob(int[] scheduled, double[][] etcMatrix, int numberofTasks, double[] processorTimes, int numberofProcessors) {
+
+        int globalLocalMinProcessor = 0; // This will hold the minimum global processor
+        int globalLocalMinJob = 0; // This will hold the minimum global job index
+
+        // Most minimumJob
+        int minJobInd = 0;
+
+        // Array of all the processors doing each task properly
+        int[] bestProcessors = new int[numberofTasks];
+
+        // Array of all the minimum times for each job
+        double[] minJobs = new double[numberofTasks];
+
+        // Find min execution time p/ job
+        for(int i = 0; i < numberofTasks; i++){
+
+            // Check if scheduled
+            double currMin = Double.MAX_VALUE; // Store the min etc value
+
+            if(scheduled[i] != 1){ // If not scheduled job!
+                // Find best process for job
+                for(int j = 0; j < numberofProcessors; j++){
+                    // Check for min
+                    double completionTime = processorTimes[j] + etcMatrix[j][i]; // Completion time is the combined processTime and isolated duration of job
+
+                    if(completionTime < currMin){ // We're actually comparing the currentMinimum time to the completion time
+                        currMin = completionTime; // Store completion time
+                        bestProcessors[i] = j; // Best processor j for job i
+                    }
+                }
+                // Put the currMin job for i inside i slot of minJobs
+                minJobs[i] = currMin; // I is our index
+            } else {
+                ; //Do nothing
+            }
+        }
+
+        // Find the min overall & its corresponding job and corresponding processor
+
+        // A very important point, minJobs contains all the min values of avaiable jobs and 0 at the positions of scheduled jobs
+        double minTemp = Double.MAX_VALUE; // This is temp for storing min value
+        for(int i = 0; i < numberofTasks; i++){
+            if(scheduled[i] != 1){
+                if(minTemp > minJobs[i]){ // If last min is more than current
+                    minTemp = minJobs[i]; // Put current in temp
+                    minJobInd = i; // Store the current min index
+                }
+            } else {
+                ; // Do nothing
+            }
+        }
+
+        // Now assign to finals
+        globalLocalMinJob = minJobInd;
+        globalLocalMinProcessor = bestProcessors[minJobInd]; // find the best job for the min job's index
+        // Set the job
+        scheduled[minJobInd] = 1;
+
+        return new int[]{globalLocalMinProcessor, globalLocalMinJob};// Found this neat trick of returning two statements as an array
+        ///  Link: https://stackoverflow.com/questions/35703237/how-to-return-a-temporary-int-array-in-java#:~:text=When%20you%20write%20int%5B%5D,5%2C8935%2033%2040
+    }
+
+    double[] equalisingProcessors(double[][] etcMatrix, double[] processorTimes, int numberofProcessors){
+
+        // Create a temp value to hold the previous makespan
+        double prevMakeSpan = 0.0;
+        for (double processorTime : processorTimes) {
+            prevMakeSpan = Math.max(prevMakeSpan, processorTime);
+        }
+        // This loop will loop through each element of the processTimes array
+        for(int i = 0; i < numberofProcessors; i++){
+
+            // From this we will do a local search through a random point in array
+            // To search for most occupied processor
+            int startPos = rand.nextInt(numberofProcessors);
+
+            // This is for finding the heavy local proc
+            double heavyLocalProcDuration = 0.0;
+            double lightestLocalProcDuration = Double.MAX_VALUE;
+            // This is for finding the lightest local proc
+            int heavyProcessorIndex = 0;
+            int lightestProcessorIndex = 0;
+
+
+            // This for loop finds the most loadful processor
+            for(int j = 1; j < 7; j++){ // Check 3 forward 3 back
+                int forward = (startPos + j) % numberofProcessors; // Forward neighbour
+                int backward = Math.floorMod(startPos - j, numberofProcessors); // Back neighbour
+
+                /// Next we'll find the processor with the heaviest load
+                if(processorTimes[forward] > heavyLocalProcDuration){ // If forward more
+                    heavyLocalProcDuration = processorTimes[forward];
+                    heavyProcessorIndex = forward; // Get the processor that is the most heaviest!
+                }
+
+                if(processorTimes[backward] > heavyLocalProcDuration){ // If backward more
+                    heavyLocalProcDuration = processorTimes[backward];
+                    heavyProcessorIndex = backward; // Get the processor that is the most heaviest!
+                }
+
+                /// Next we'll find the processor with the lightest load
+                if(processorTimes[forward] < lightestLocalProcDuration){ // If forward more
+                    lightestLocalProcDuration = processorTimes[forward];
+                    lightestProcessorIndex = forward; // Get the processor that is the most lightest!
+                }
+
+                if(processorTimes[backward] < lightestLocalProcDuration){ // If backward more
+                    lightestLocalProcDuration = processorTimes[backward];
+                    lightestProcessorIndex = backward; // Get the processor that is the most lightest!
+                }
+
+            }
+
+            // This then experiements!
+
+            // Now we need to try and subtract each job from the processor with the most load
+            // Store in some temp
+            // Add that to the lightest processor
+            // See if has improved the makespan
+
+            for(int k = 0; k < etcMatrix[heavyProcessorIndex].length; k++){ // Iterate thru each task in heavyProcessorIndex
+                // Continue only if it is going well and having some improvement!
+                processorTimes[heavyProcessorIndex] -= etcMatrix[heavyProcessorIndex][k]; // Remove job from the processor times of the heaviest process
+                processorTimes[lightestProcessorIndex] += etcMatrix[lightestProcessorIndex][k]; // Add job to the lightest processor
+                // Check if makespan has improved!
+                double newMakeSpan = analyseTempMakeSpan(processorTimes);
+                if(newMakeSpan < prevMakeSpan){ // If newMakespan is less than the previous make span
+                    // Make the newMakeSpan, the previous makespan
+                    prevMakeSpan = newMakeSpan;
+
+                } else { // There has been no improvement
+                    // Reject the changes
+                    processorTimes[heavyProcessorIndex] += etcMatrix[heavyProcessorIndex][k]; // Add job back from the processor times of the heaviest process
+                    processorTimes[lightestProcessorIndex] -= etcMatrix[lightestProcessorIndex][k]; // remove job to the lightest processor
+
+                }
+            }
+
+        }
+
+        // From this we would've gotten an improved ProcessorTimes array with a best optimised makespan, I think?
+        return processorTimes;
+    }
+
+    double analyseTempMakeSpan(double[] ProcessTimes){ // Specialised process for checking test Makespan
+        double newMakeSpan = 0.0;
+        for (double processorTime : ProcessTimes) {
+            newMakeSpan = Math.max(newMakeSpan, processorTime);
+        }
+        return newMakeSpan;
+    }
+
 }

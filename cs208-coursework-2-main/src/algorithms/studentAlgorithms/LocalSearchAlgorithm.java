@@ -4,7 +4,7 @@ import algorithms.SchedulingAlgorithm;
 
 import java.util.Random;
 
-public class LocalSearch2Algorithm extends SchedulingAlgorithm {
+public class LocalSearchAlgorithm extends SchedulingAlgorithm {
 
     // Set up a random point to access in the file
     Random rand = new Random();
